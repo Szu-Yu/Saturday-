@@ -1,5 +1,18 @@
 <head>
 
+ <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+          <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+          <script src="http://gregfranko.com/jquery.selectBoxIt.js/js/jquery.selectBoxIt.min.js"></script>
+          <script>
+            $(function() {
+
+              var selectBox = $("select").selectBoxIt();
+
+            });
+          </script>
+
+<link rel="stylesheet" href="http://gregfranko.com/jquery.selectBoxIt.js/css/jquery.selectBoxIt.css" />
+
     <script src="http://code.highcharts.com/highcharts.js"></script>
 
 <script src="http://code.highcharts.com/modules/exporting.js"></script>
@@ -13,7 +26,7 @@ $(function () {
             plotShadow: false
         },
         title: {
-            text: '網站使用情況'
+            text: "圓餅圖"
         },
         tooltip: {
             pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
@@ -39,10 +52,65 @@ $(function () {
     });
 });
 </script>
+<script>
+    $(function () {
+    $('#container2').highcharts({
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: "長條圖"
+        },
+        subtitle: {
+            text: 'Source: <a href="http://www.colatour.com.tw" >COLA Tour</a>'
+        },
+        xAxis: {
+            type: 'category',
+            labels: {
+                rotation: -45,
+                style: {
+                    fontSize: '13px',
+                    fontFamily: 'Verdana, sans-serif'
+                }
+            }
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: '長條圖'
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            pointFormat: 'Population in 2008: <b>{point.y:.1f} millions</b>'
+        },
+        series: [{
+            name: 'Population',
+            data:<%=@g.to_json.html_safe%> ,
+            dataLabels: {
+                enabled: true,
+                rotation: -90,
+                color: '#FFFFFF',
+                align: 'right',
+                format: '{point.y:.1f}', // one decimal
+                y: 10, // 10 pixels down from the top
+                style: {
+                    fontSize: '13px',
+                    fontFamily: 'Verdana, sans-serif'
+                }
+            }
+        }]
+    });
+});
+
+</script>
 <%end%>
 </head>
-<body>
+<body id="page-top">
 <div id='container1'>
+
 <nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
         <div class="container">
             <div class="navbar-header">
@@ -61,11 +129,26 @@ $(function () {
                     <li class="hidden active">
                         <a href="#page-top"></a>
                     </li>
+                    
+                    
+                       <!-- <a class="page-scroll" href="#download">Download</a> -->
+                        <% if user_signed_in? %>
+                    <li><a>用戶：<%=current_user.email%></a></li>
                     <li>
-                        <a class="page-scroll" href="#about">About</a>
+                    <%= link_to "Log Out", destroy_user_session_path,method:'delete' %>
+                    </li>
+                    <% else %>
+                    <li>
+                    <%= link_to "Log In", new_user_session_path %>
+                    </li>
+                    <% end %>
+
+
+                    <li>
+                        <a class="page-scroll" href="#about">Search</a>
                     </li>
                     <li>
-                        <a class="page-scroll" href="#download">Download</a>
+                        <a class="page-scroll" href="#armpit">Graph</a>
                     </li>
                     <li>
                         <a class="page-scroll" href="#contact">Contact</a>
@@ -78,7 +161,7 @@ $(function () {
     </nav>
     <header class="intro">
         <div class="intro-body" id='intro-bg'>
-            <div class="container">
+            <div class="container" id=belly>
 
                 <div class="row">
                     <div class="col-md-8 col-md-offset-2">
@@ -94,44 +177,92 @@ $(function () {
             </div>
         </div>
     </header>
-    <section id="about" class="container content-section text-center">
-        <div class="row">
+    <div  id='about'>
+    </div>
+    <!--<section id="about" class="container content-section text-center">
+        -->
+<%if user_signed_in?%>
             <div class="col-lg-8 col-lg-offset-2">
-                <h2>About Grayscale</h2>
-                <p>Grayscale is a free Bootstrap 3 theme created by Start Bootstrap. It can be yours right now, simply download the template on <a href="http://startbootstrap.com/template-overviews/grayscale/">the preview page</a>. The theme is open source, and you can use it for any purpose, personal or commercial.</p>
-                <p>This theme features stock photos by <a href="http://gratisography.com/">Gratisography</a> along with a custom Google Maps skin courtesy of <a href="http://snazzymaps.com/">Snazzy Maps</a>.</p>
-                <p>Grayscale includes full HTML, CSS, and custom JavaScript files along with LESS files for easy customization.</p>
-            </div>
-        </div>
-    </section>
+                <div class="row" id="mainform">
+                <h2>Search--搜尋條件</h2>
+                <div id='mainform'>
+                <%= form_tag root_path,method:"get" do %>
+    
+           
+            
+        <h3>
+        顧客類型
+        </h3>
+            <label class='selectTitle'>性別</label>
+        <q class="selection">    
+            <%=select_tag :gender,"<option>全部</option><option>男</option><option>女</option>".html_safe ,:onchange => 'genderchanged()' %></q>
 
-    <!-- Download Section -->
-    <section id="download" class="content-section text-center">
-        <div class="download-section">
-            <div class="container">
-                <div class="col-lg-8 col-lg-offset-2">
-                    <h2>Download Grayscale</h2>
-                    <p>You can download Grayscale for free on the preview page at Start Bootstrap.</p>
-                    <a href="http://startbootstrap.com/template-overviews/grayscale/" class="btn btn-default btn-lg">Visit Download Page</a>
-                </div>
+        <label class='selectTitle'>年齡</label>
+        <q class="selection">
+        <%=select_tag :age,"<option>全部</option><option>1~20</option><option>21~40</option><option>41~60</option><option>61~80</option>".html_safe,:onchange => 'agechanged()'%></q>
+        
+        <p>
+        <h3>
+        旅遊偏好
+        </h3>
+            <%= radio_button_tag(:graph, "region") %><label class='selectTitle'>地區</label>
+            <%= radio_button_tag(:graph, "month") %><label class='selectTitle'>月份</label>
+            <%= radio_button_tag(:graph, "type") %><label class='selectTitle'>團型</label>
+            <q class='selection'><%=submit_tag "search"%></q>
+        
+    <%end%>
+    </div>
+                
             </div>
+
         </div>
-    </section>
+                <br></br>
+                <div class="col-lg-8 col-lg-offset-2" id='graphtitle' >
+                <div id='armpit'></div>
+                    <h2 >Result</h2>
+                     <div id='graphoption'>
+                <%=label_tag @result %>
+                </div>
+                </div>
+    
+           
+         <div id='down'>
+            
+        <div id="container" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>
+</div>
+<div id='chart2'>
+ <div id="container2" style="min-width: 300px; height: 400px; margin: 0 auto">
+</div>
+</div>
+    <!--</section>-->
+ 
+    <!-- Download Section -->
+    
 
     <!-- Contact Section -->
     <section id="contact" class="container content-section text-center">
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2">
-                <h2>Contact Start Bootstrap</h2>
-                <p>Feel free to email us to provide some feedback on our templates, give us suggestions for new templates and themes, or to just say hello!</p>
-                <p><a href="mailto:feedback@startbootstrap.com">feedback@startbootstrap.com</a>
+                <h2>Contact Us</h2>
+                <div id="minion1"><%=image_tag('Angry-Minion-icon.png')%><p>
+                朱思瑀 資管二 102306045</p>
+                <p>邱俊銘 資管二 102306005</p>
+                <p>吳律賢 資管二 102306087</p>
+                  <a href="mailto:102306045@nccu.edu.tw">
+                </div>
+                
+                <a href="mailto:102306045@nccu.edu.tw">
+                <p>Feel free to email us to provide some feedback, to give us suggestions for the system, or to just say hello!</p></a>
+              
                 </p>
+
+
                 <ul class="list-inline banner-social-buttons">
-                    <li>
-                        <a href="https://twitter.com/SBootstrap" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
+                   <li>
+                        <a href="https://github.com/Szu-Yu/Saturday-" class="btn btn-default btn-lg"><i class="fa fa-google-plus fa-fw"></i> <span class="network-name">FAcebook</span></a>
                     </li>
                     <li>
-                        <a href="https://github.com/IronSummitMedia/startbootstrap" class="btn btn-default btn-lg"><i class="fa fa-github fa-fw"></i> <span class="network-name">Github</span></a>
+                        <a href="https://github.com/Szu-Yu/Saturday-" class="btn btn-default btn-lg"><i class="fa fa-github fa-fw"></i> <span class="network-name">Github</span></a>
                     </li>
                     <li>
                         <a href="https://plus.google.com/+Startbootstrap/posts" class="btn btn-default btn-lg"><i class="fa fa-google-plus fa-fw"></i> <span class="network-name">Google+</span></a>
@@ -140,48 +271,19 @@ $(function () {
             </div>
         </div>
     </section>
-
+    <%else%>
+    <p id="please">Please log in to continue.</p>
+<%end%>
     <!-- Map Section -->
-    <div id="map"></div>
+    
 
     <!-- Footer -->
     <footer>
         <div class="container text-center">
-            <p>Copyright &copy; Your Website 2014</p>
+            <p>Copyright &copy; MIS DBMS KING 2015</p>
         </div>
     </footer>
-<div class="7">
+
           
-Hello
-</div>
-<div id='main'>
-<div id='upper'>
-<%= form_tag root_path,method:"get" do %>
-	<table>
-		<tr>
-			
-			
-		
-			<td>性別</td>
-			<td><%=select_tag :gender,"<option>全部</option><option>男</option><option>女</option>".html_safe%></td>
-		
-		<td><%=select_tag :age,"<option>全部</option><option>1~20</option><option>21~40</option><option>41~60</option><option>61~80</option>".html_safe%></td>
-		
-			<tr><td><%= radio_button_tag(:graph, "region") %>地區</td>
-<td><%= radio_button_tag(:graph, "month") %>月份</td>
-<td><%= radio_button_tag(:graph, "type") %>團型</td>
-			<td><%=submit_tag "search"%></td>
-		</tr>
-		</tr>
-	</table>
-	<%end%>
-</div>
-<div id='down'>
-		<div id="container" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>
-
-
-
-</div>
-</div>
 </div>
 </body>
